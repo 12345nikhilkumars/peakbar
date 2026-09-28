@@ -1,0 +1,58 @@
+Peakbar: third-party notices
+=============================
+
+Copyright (C) 2026 Nikhil S
+
+Peakbar is free software, licensed under the GNU Affero General Public License,
+version 3 or later.  The full text is in LICENSE.
+
+Peakbar is not affiliated with, endorsed by, or supported by DeepSeek.
+"DeepSeek" is the property of its owner.
+
+Conformance vectors
+-------------------
+
+  Resources/vectors.json
+
+  Vendored verbatim from the DeepSeek peak/off-peak conformance suite:
+
+      https://github.com/xyzs996/deepseek-peak-hours
+      deepseek-peak-offpeak-vectors.json
+
+  Licence: CC0 1.0 Universal (Public Domain Dedication)
+           https://creativecommons.org/publicdomain/zero/1.0/
+
+  The suite is used unmodified as the app's conformance corpus: 15 phase
+  vectors, 3 next-boundary vectors, and the two schedule configurations the
+  config checks validate.  The vectors are test fixtures and are not shipped
+  in the application bundle.
+
+Holiday calendar snapshot
+-------------------------
+
+  Resources/cn_zh.ics
+
+  A point-in-time snapshot of Apple's China holiday calendar, retrieved from:
+
+      https://calendars.icloud.com/holidays/cn_zh.ics
+
+  It is used only as an offline, deterministic test fixture for the iCalendar
+  parser and is not shipped in the application bundle.
+
+Statutory holiday data
+----------------------
+
+  Resources/holidays-2026.json
+
+  Derived from the State Council of the People's Republic of China's 2026
+  public holiday arrangement, 国办发明电〔2025〕7号.  Government notices of
+  this kind are not subject to copyright.
+
+Bundled runtime data
+--------------------
+
+  Resources/schedule.json
+
+  DeepSeek's published peak/off-peak billing schedule, as described at:
+
+      https://api-docs.deepseek.com/quick_start/pricing/

@@ -1,0 +1,8 @@
+{
+  "calendar_timezone": "Asia/Shanghai",
+  "calendar_utc_offset_hours": 8,
+  "peak_windows_utc": [["01:00", "04:00"], ["06:00", "10:00"]],
+  "peak_weekdays": [1, 2, 3, 4, 5],
+  "weekend_offpeak_effective_utc": "2026-08-22T16:00:00Z",
+  "offpeak_multiplier": 0.5
+}
