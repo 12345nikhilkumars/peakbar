@@ -3,11 +3,11 @@
 //  Peakbar
 //
 //  The holiday data pipeline: the `Transport` seam, the iCalendar parser, and
-//  `HolidaySource`: the two-source chain with its cache and needs-based
-//  fetch policy.  See ARCHITECTURE.md §3.3, §3.4 and §5.1.
+//  `HolidaySource`, the two-source chain with its cache and needs-based fetch
+//  policy.
 //
 //  All I/O lives here.  `HolidaySource` produces a `HolidayTable` value;
-//  `Resolver` consumes one.  The phase path therefore never blocks (§4.2).
+//  `Resolver` consumes one.  The phase path therefore never blocks.
 //
 
 import Foundation
@@ -33,20 +33,20 @@ enum TransportResult {
     case failure(TransportError)
 }
 
-/// The single network seam (§4.4).  Everything above it is pure.
+/// The single network seam.  Everything above it is pure.
 protocol Transport {
     func get(url: URL, ifModifiedSince: String?, ifNoneMatch: String?) -> TransportResult
 }
 
 extension Transport {
-    /// The two-argument shape named in §4.1's class diagram.
+    /// The two-argument shape.
     func get(url: URL, ifModifiedSince: String?) -> TransportResult {
         get(url: url, ifModifiedSince: ifModifiedSince, ifNoneMatch: nil)
     }
 }
 
 /// The real transport: one conditional HTTPS GET, synchronous, meant to be
-/// called from a background queue (§5.1).
+/// called from a background queue.
 ///
 /// The session is created **on first use**, not at init.  Touching
 /// `URLSession.shared` initialises CFNetwork, which costs about 1.4 MB of
@@ -120,7 +120,7 @@ private final class ResultBox {
 }
 
 /// Test double: records every attempt and returns a canned result.  Never
-/// touches the network (§4.4).
+/// touches the network.
 final class ManualTransport: Transport {
     var result: TransportResult
 
@@ -143,8 +143,8 @@ final class ManualTransport: Transport {
 
 /// Produces the `HolidayTable` the resolver consumes.
 ///
-/// Precedence (§3.3): Apple China calendar (fetched, cached) > bundled floor.
-/// The fetch is needs-based (§5.1): on launch, then at most once per 24 h and
+/// Precedence: Apple China calendar (fetched, cached) > bundled floor.
+/// The fetch is needs-based: on launch, then at most once per 24 h and
 /// only inside the year-end window, or when `stale` / `sourceWarning` is set.
 ///
 /// **Not thread-safe.**  It owns mutable state (the current table, the
@@ -153,10 +153,10 @@ final class ManualTransport: Transport {
 /// through a single serial queue.
 final class HolidaySource {
 
-    /// The only outbound endpoint in the app (§8).
+    /// The only outbound endpoint in the app.
     static let calendarURL = URL(string: "https://calendars.icloud.com/holidays/cn_zh.ics")!
 
-    /// 24 h between attempts once the launch fetch has happened (§5.1).
+    /// 24 h between attempts once the launch fetch has happened.
     static let minimumFetchInterval: TimeInterval = 86_400
 
     private let transport: Transport
@@ -212,9 +212,9 @@ final class HolidaySource {
     ///
     /// - Valid cache: rank-1 union rank-2, no warning.
     /// - Present but malformed cache: fall back one rank (the bundled floor)
-    ///   and raise `sourceWarning` (§3.3, §6 case 8).
+    ///   and raise `sourceWarning`.
     /// - No cache at all: the bundled floor, no warning, the expected
-    ///   first-run state (§6 case 9).
+    ///   first-run state.
     @discardableResult
     func resolveTable() -> HolidayTable {
         if let text = readCache() {
@@ -248,7 +248,7 @@ final class HolidaySource {
         return inYearEndWindow || stale || currentTable.sourceWarning
     }
 
-    /// The whole §5.1 policy.  Synchronous: the app calls it from a background
+    /// The whole refresh policy.  Synchronous: the app calls it from a background
     /// queue, the tests call it directly.  Returns the table in force
     /// afterwards.
     @discardableResult
@@ -269,7 +269,7 @@ final class HolidaySource {
         return currentTable
     }
 
-    /// The name used in §4.1's class diagram.
+    /// The name used in the design.
     @discardableResult
     func fetchIfDue() -> HolidayTable { refreshIfDue(isLaunch: false) }
 
@@ -283,7 +283,7 @@ final class HolidaySource {
 
         case .failure:
             // No network: keep the cache unchanged.  Sets *neither* flag:
-            // the cache is still the best available source (§3.3, §6 case 20).
+            // the cache is still the best available source.
             break
 
         case .success(let response):
@@ -292,7 +292,6 @@ final class HolidaySource {
                   HolidaySource.isWellFormed(ics: text) else {
                 // A payload arrived but is unreadable: fall back one rank (the
                 // cache, i.e. leave the table as it is) and raise the warning
-                // (§3.3, §6 case 21).
                 currentTable = currentTable.withSourceWarning(true)
                 return
             }
@@ -308,7 +307,6 @@ final class HolidaySource {
 
     /// Cheap structural sanity check.  A truncated download is missing its
     /// closing markers and must not be allowed to overwrite a good cache
-    /// (§6 case 21).
     static func isWellFormed(ics: String) -> Bool {
         ics.contains("BEGIN:VCALENDAR")
             && ics.contains("END:VCALENDAR")
@@ -319,18 +317,17 @@ final class HolidaySource {
     /// The source label attached to tables parsed from the Apple calendar.
     static let appleSourceLabel = "Apple 中国大陆节假日 (calendars.icloud.com)"
 
-    /// Pure function of the ICS text (§3.4).
+    /// Pure function of the ICS text.
     ///
     /// Discriminates **only** on `X-APPLE-SPECIAL-DAY`.  `WORK-HOLIDAY` events
     /// contribute days off (DTSTART→DTEND, **DTEND exclusive**);
     /// `ALTERNATE-WORKDAY` events contribute make-up workdays; everything else
-    /// , the 206 cultural and solar-term events, is ignored (§3.4, §6
-    /// cases 22/23).
+    /// (the 206 cultural and solar-term events) is ignored.
     ///
     /// `covered_years` is derived from the data, not from the file's span: a
     /// year counts only if a `WORK-HOLIDAY` event lands in it.  A year with
     /// cultural events but no `WORK-HOLIDAY` event is *uncovered*, not
-    /// holiday-free (§3.4, §6 case 22).
+    /// holiday-free.
     func parse(ics: String) -> HolidayTable {
         var daysOff = Set<Day>()
         var makeup = Set<Day>()

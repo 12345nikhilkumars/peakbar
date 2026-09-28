@@ -3,9 +3,8 @@
 //  Peakbar
 //
 //  The behavioural suites: weekend, holiday, make-up, the effective-date gate,
-//  coverage and the fail-safe, cache merge/fallback, the next-change walk, the
-//  lookahead bound sweep, the lifecycle seam and the notification rules.
-//  See ARCHITECTURE.md §6 and §7.
+//  coverage and the fail-safe, cache merge and fallback, the next-change walk,
+//  the lookahead bound sweep, the lifecycle seam and the notification rules.
 //
 
 import Foundation
@@ -65,7 +64,7 @@ func runEdgeCaseTests() {
     let bundled = loadBundledHolidays()
 
     // ------------------------------------------------------------ 1. weekend
-    section("Weekend rule (§6 case 1)")
+    section("Weekend rule")
     do {
         let resolver = Resolver(schedule: shipped, holidays: bundled)
         var checked = 0
@@ -119,7 +118,7 @@ func runEdgeCaseTests() {
     }
 
     // ------------------------------------------------------------ 2. holiday
-    section("Holiday rule (§6 case 5)")
+    section("Holiday rule")
     do {
         // Gate neutralised so every 2026 weekday holiday is testable.
         let resolver = Resolver(schedule: early, holidays: bundled)
@@ -151,7 +150,7 @@ func runEdgeCaseTests() {
     }
 
     // The shipped gate: only holidays on or after the effective instant are
-    // suppressed.  The rule is not retroactive (§6 case 3, A9).
+    // suppressed.  The rule is not retroactive.
     do {
         let resolver = Resolver(schedule: shipped, holidays: bundled)
         let effective = shipped.weekendOffpeakEffectiveUTC
@@ -179,7 +178,7 @@ func runEdgeCaseTests() {
     }
 
     // ------------------------------------------------------------ 3. make-up
-    section("Make-up workdays (§6 case 6)")
+    section("Make-up workdays")
     do {
         let resolver = Resolver(schedule: early, holidays: bundled)
         let makeups = bundled.makeupWorkdays.sorted()
@@ -201,7 +200,7 @@ func runEdgeCaseTests() {
     }
 
     // ------------------------------------------- 4. coverage and fail-safe
-    section("Coverage, fail-safe and flag distinction (§6 cases 7, 22; A6)")
+    section("Coverage, fail-safe and flag distinction")
     do {
         let resolver = Resolver(schedule: shipped, holidays: bundled)
         // Monday 2027-06-07, 10:00 Beijing, inside the first peak window.
@@ -235,10 +234,10 @@ func runEdgeCaseTests() {
     }
 
     // --------------------------------- 4b. the flag covers the target year
-    section("Display staleness covers the countdown target (§4.1, §3.4, A12)")
+    section("Display staleness covers the countdown target")
     do {
         // 2026-12-31 18:00 Beijing is the first instant whose next change
-        // lands in 2027 (§3.4).  The current year is covered; the target year
+        // lands in 2027.  The current year is covered; the target year
         // is not.  A now-only flag would stay silent here.
         let instant = beijingDate(2026, 12, 31, 18, 0)
 
@@ -299,7 +298,7 @@ func runEdgeCaseTests() {
     }
 
     // -------------------------------------------------- 5. cache merge / bad
-    section("Cache merge and malformed cache (§6 cases 8, 9)")
+    section("Cache merge and malformed cache")
     do {
         let dir = makeTempDirectory("merge")
         defer { removeTempDirectory(dir) }
@@ -361,7 +360,7 @@ func runEdgeCaseTests() {
     }
     do {
         // No cache and no network: the bundled floor, and no warning: the
-        // expected first-run state (§6 case 9).
+        // expected first-run state.
         let dir = makeTempDirectory("empty")
         defer { removeTempDirectory(dir) }
         let source = HolidaySource(transport: ManualTransport(),
@@ -373,7 +372,7 @@ func runEdgeCaseTests() {
     }
 
     // ------------------------------------------------- 6. next-change walk
-    section("Next-change walk (§6 cases 2, 3, 10)")
+    section("Next-change walk")
     do {
         let resolver = Resolver(schedule: shipped, holidays: bundled)
         let fridayEvening = parseISO("2026-08-28T10:30:00Z")!   // Beijing Fri 18:30
@@ -409,7 +408,7 @@ func runEdgeCaseTests() {
     }
 
     // ---------------------------------------------- 7. lookahead bound sweep
-    section("Lookahead bound: minute sweep of the shipped coverage range (§7)")
+    section("Lookahead bound: minute sweep of the shipped coverage range")
     do {
         let resolver = Resolver(schedule: shipped, holidays: bundled)
         let start = shipped.weekendOffpeakEffectiveUTC
@@ -451,7 +450,7 @@ func runEdgeCaseTests() {
     }
 
     // ------------------------------------------------------------ 8. lifecycle
-    section("Lifecycle and rescheduling (§5, §6 cases 11, 14, 15)")
+    section("Lifecycle and rescheduling")
     do {
         let clock = ManualClock(beijingDate(2026, 8, 24, 10, 0))   // Beijing Mon 10:00
         let ticker = ManualTicker()
@@ -491,7 +490,7 @@ func runEdgeCaseTests() {
     }
 
     // ------------------------------------------------------- 9. notifications
-    section("Notifications (§4.6, §6 cases 18, 19, 25)")
+    section("Notifications")
     do {
         let clock = ManualClock(beijingDate(2026, 8, 24, 11, 59, 30))   // Beijing Mon 11:59:30
         let ticker = ManualTicker()
@@ -550,7 +549,7 @@ func runEdgeCaseTests() {
               "offset=\(localOffset) body='\(body)'")
     }
     do {
-        // Asleep across the boundary: suppress (§6 case 18).
+        // Asleep across the boundary: suppress.
         let clock = ManualClock(beijingDate(2026, 8, 24, 11, 59, 30))
         let ticker = ManualTicker()
         let notifier = ManualNotifier()
@@ -597,7 +596,7 @@ func runEdgeCaseTests() {
     }
 
     // ------------------------------------------------------ 10. display text
-    section("Display formatting (§4.5)")
+    section("Display formatting")
     do {
         check("remaining 2h45m", Format.remaining(2 * 3600 + 45 * 60) == "2h45m")
         check("remaining 1h05m pads minutes", Format.remaining(3600 + 5 * 60) == "1h05m")

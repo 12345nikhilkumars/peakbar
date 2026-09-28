@@ -2,12 +2,12 @@
 //  Notifier.swift
 //  Peakbar
 //
-//  The notification seam.  See ARCHITECTURE.md §4.4, §4.6 and §6 cases 18/19.
+//  The notification seam.
 //
 //  `UNUserNotificationCenter.current()` traps when the process has no bundle
-//  identifier (§6 case 26), so the app is only ever launched as the assembled
-//  `.app`.  Step 0 verified that an ad-hoc-signed, non-notarized LSUIElement
-//  app in /Applications can in fact be authorized and deliver.
+//  identifier, so the app is only ever launched as the assembled `.app`.  An
+//  ad-hoc-signed, non-notarized LSUIElement app in /Applications can in fact be
+//  authorized and deliver; that was verified before this feature was built.
 //
 
 import Foundation
@@ -15,7 +15,7 @@ import UserNotifications
 
 /// Requests authorization once and posts on phase flips.  Denied
 /// authorization is silently absorbed: no nagging, no repeat prompt, and the
-/// menu bar is unaffected (§4.6, §6 case 19).
+/// menu bar is unaffected.
 protocol Notifier {
     func requestAuthorization()
     func post(title: String, body: String)
@@ -44,7 +44,7 @@ final class UserNotifier: Notifier {
         content.body = body
         content.sound = .default
         // A nil trigger delivers immediately; the app's own one-shot ticker is
-        // already the thing that wakes on the boundary (§4.6).
+        // already the thing that wakes on the boundary.
         let request = UNNotificationRequest(identifier: UUID().uuidString,
                                             content: content,
                                             trigger: nil)

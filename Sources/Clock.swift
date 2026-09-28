@@ -2,8 +2,8 @@
 //  Clock.swift
 //  Peakbar
 //
-//  The injectable time / wake / ticker seam, plus the system and manual
-//  implementations.  See ARCHITECTURE.md §4.4 and §5.
+//  The injectable time, wake and ticker seam, plus the system and manual
+//  implementations.
 //
 //  The seam exists so the scheduler can be driven deterministically from the
 //  test harness.  `Resolver` needs none of it; it is pure over an instant.
@@ -31,13 +31,13 @@ protocol Clock {
 }
 
 /// A one-shot timer.  `schedule(at:fire:)` replaces any pending timer; there
-/// is never more than one (§5, §6 case 28).
+/// is never more than one.
 protocol Ticker {
     func schedule(at date: Date, _ fire: @escaping () -> Void)
     func cancel()
 }
 
-/// System events that must force a recompute (§5).
+/// System events that must force a recompute.
 protocol Lifecycle {
     func onEvent(_ handler: @escaping (LifecycleEvent) -> Void)
 }
@@ -79,7 +79,7 @@ final class DispatchTicker: Ticker {
     }
 }
 
-/// Bridges the four system notifications of §5 to `LifecycleEvent`s.
+/// Bridges the four system notifications to `LifecycleEvent`s.
 final class SystemLifecycle: Lifecycle {
     private var observers: [NSObjectProtocol] = []
 

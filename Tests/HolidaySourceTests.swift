@@ -2,9 +2,8 @@
 //  HolidaySourceTests.swift
 //  Peakbar
 //
-//  The iCalendar parser, the two-source precedence chain, and the
-//  needs-based fetch policy of ARCHITECTURE.md §5.1.  See also §3.3, §3.4
-//  and §7.
+//  The iCalendar parser, the two-source precedence chain, and the needs-based
+//  fetch policy.
 //
 //  Every fetch case injects a `ManualTransport`; no test touches the network.
 //
@@ -81,7 +80,7 @@ func runHolidaySourceTests() {
                                      bundled: bundled)
 
     // ------------------------------------------------------- ICS 2026 equality
-    section("ICS parse: 2026 exact match (§3.4, §7)")
+    section("ICS parse: 2026 exact match")
     do {
         check("the fixture is non-empty", fixture.count > 10_000, "\(fixture.count) bytes")
 
@@ -100,7 +99,7 @@ func runHolidaySourceTests() {
     }
 
     // --------------------------------------------------------- ICS DTEND rules
-    section("ICS parse: DTEND semantics (§6 case 24)")
+    section("ICS parse: DTEND semantics")
     do {
         let parsed = parserSource.parse(ics: fixture)
         check("Spring Festival range 20260215→20260224 includes 2026-02-23",
@@ -143,7 +142,7 @@ func runHolidaySourceTests() {
     }
 
     // -------------------------------------------------------- ICS discriminator
-    section("ICS parse: discriminator is X-APPLE-SPECIAL-DAY only (§3.4, §6 cases 22/23)")
+    section("ICS parse: discriminator is X-APPLE-SPECIAL-DAY only")
     do {
         let parsed = parserSource.parse(ics: fixture)
 
@@ -175,7 +174,7 @@ func runHolidaySourceTests() {
     }
 
     // ------------------------------------------------------ ICS uncovered year
-    section("ICS parse: coverage is derived, not spanned (§3.4, §6 case 22)")
+    section("ICS parse: coverage is derived, not spanned")
     do {
         let parsed = parserSource.parse(ics: fixture)
         check("2027 is not in covered_years (zero WORK-HOLIDAY events)",
@@ -208,7 +207,7 @@ func runHolidaySourceTests() {
     }
 
     // ------------------------------------------------------------- precedence
-    section("Two-source precedence (§3.3, §7)")
+    section("Two-source precedence")
     do {
         let dir = makeTempDirectory("precedence")
         defer { removeTempDirectory(dir) }
@@ -238,7 +237,7 @@ func runHolidaySourceTests() {
     }
 
     // -------------------------------------------------------- transport failure
-    section("Fetch outcomes: transport failure vs malformed payload (§6 cases 20/21)")
+    section("Fetch outcomes: transport failure vs malformed payload")
     do {
         let dir = makeTempDirectory("failure")
         defer { removeTempDirectory(dir) }
@@ -322,8 +321,8 @@ func runHolidaySourceTests() {
               "attempts=\(transport.attempts.count)")
     }
 
-    // -------------------------------------------------------- fetch policy (§5.1)
-    section("Fetch policy: needs-based (§5.1, §6 cases 29/30/31)")
+    // -------------------------------------------------------- fetch policy
+    section("Fetch policy: needs-based")
     do {
         // (a) No need: mid-June, current year covered, no warning.
         let dir = makeTempDirectory("policyNone")
@@ -434,7 +433,7 @@ func runHolidaySourceTests() {
     }
 
     // ---------------------------------------------- needs-based volume estimate
-    section("Fetch volume (§5.1)")
+    section("Fetch volume")
     do {
         // Walk a whole year of day-change events under the real policy and
         // count the requests.  The doc's figure is ~48 a year.
@@ -457,7 +456,7 @@ func runHolidaySourceTests() {
     }
 
     // ------------------------------------------------ Resolver stays pure
-    section("Resolver purity (§6 case 27)")
+    section("Resolver purity")
     do {
         // Two resolvers with identical inputs must agree, and building one must
         // have no side effects on the other.

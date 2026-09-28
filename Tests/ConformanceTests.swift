@@ -3,8 +3,7 @@
 //  Peakbar
 //
 //  The 20 CC0 conformance vectors: 15 `phase_at`, 3 `next_boundary`, and 2
-//  `config_check` (one per schedule in the vendored file).  See
-//  ARCHITECTURE.md §7.
+//  `config_check` (one per schedule in the vendored file).
 //
 //  The suite is used unmodified from
 //  github.com/xyzs996/deepseek-peak-hours (CC0-1.0).  See NOTICE.
@@ -32,7 +31,7 @@ func runConformanceTests() {
     }
 
     // ---------------------------------------------------------------- config
-    // Two config checks, one per schedule in the file (§7: "2 config_check").
+    // Two config checks, one per schedule in the file.
 
     if let live = schedule(named: "deepseek-live-2026-08-23") {
         let windowsOK = live.peakWindowsUTC == [

@@ -2,26 +2,11 @@
 //  App.swift
 //  Peakbar
 //
-//  The status item, the `StatusModel` scheduler, the menu and every piece of
-//  display formatting.  See ARCHITECTURE.md §4.5, §4.6 and §5.
+//  The status item, the scheduler, the menu, and every string the app shows.
 //
 //  Build note: the test harness compiles this file too, with `-D PEAKCHECK`,
 //  which suppresses the `@main` entry point so `StatusModel` can be driven from
-//  `Tests/TestMain.swift` without a second entry point.  Everything else in
-//  the file is unchanged between the two builds.
-//
-//  Memory note.  This file deliberately imports **AppKit only**: no SwiftUI,
-//  no Combine.  Measured on macOS 27 / arm64, physical footprint at idle:
-//
-//      AppKit + NSStatusItem, no clickable UI .......... 11.5 MB
-//      + an NSMenu ..................................... 12.3 MB
-//      + notifications + launch-at-login ............... 12.3 MB  (free)
-//      + an initialised URLSession ..................... 13.7 MB
-//      SwiftUI MenuBarExtra instead of NSStatusItem .... 16.7 MB
-//
-//  `MenuBarExtra` keeps a SwiftUI scene alive for the process's whole life and
-//  drags in Metal and simd.  Dropping SwiftUI entirely is worth ~2.2 MB, and
-//  deferring the network session is worth a further ~1.4 MB.
+//  `Tests/TestMain.swift` without a second entry point.
 //
 
 import Foundation
@@ -33,7 +18,7 @@ import ServiceManagement
 enum AppPaths {
     static let bundleIdentifierFallback = "dev.nick.peakbar"
 
-    /// `~/Library/Application Support/<CFBundleIdentifier>/` (§5.1, §8).
+    /// `~/Library/Application Support/<CFBundleIdentifier>/`.
     static func applicationSupportDirectory(bundleIdentifier: String? = Bundle.main.bundleIdentifier) -> URL {
         let base = FileManager.default
             .urls(for: .applicationSupportDirectory, in: .userDomainMask)
@@ -47,12 +32,12 @@ enum AppPaths {
 // MARK: - Formatting
 
 /// Every string the app shows, in one place, so the menu bar, the menu and the
-/// notifications cannot drift apart (§4.5, §4.6).
+/// notifications cannot drift apart.
 ///
 /// All clock times are 12-hour with an AM/PM suffix.
 enum Format {
 
-    /// Beijing is a fixed UTC+8 offset with no DST (§3.1, A4).
+    /// Beijing is a fixed UTC+8 offset with no DST.
     static let beijingOffsetSeconds = 8 * 3600
 
     /// `2h45m` / `1h05m` / `45m`.  Minute resolution, never seconds.
@@ -81,17 +66,17 @@ enum Format {
         return "\(day.shortWeekdayName) \(clockString(date, offsetSeconds: offsetSeconds))"
     }
 
-    /// The menu bar title.  One `⚠` glyph for either warning cause (§4.5).
+    /// The menu bar title.  One `⚠` glyph for either warning cause.
     static func menuBarTitle(phase: Phase, remaining: TimeInterval, warning: Bool) -> String {
         (warning ? "⚠ " : "") + phase.display + " " + Format.remaining(remaining)
     }
 
-    /// Title for a flip notification (§4.6).
+    /// Title for a flip notification.
     static func notificationTitle(to phase: Phase) -> String {
         phase == .peak ? "Peak started" : "Off-peak started"
     }
 
-    /// Body for a flip notification (§4.6).
+    /// Body for a flip notification.
     static func notificationBody(to phase: Phase, boundary: Date, now: Date) -> String {
         let price = (phase == .peak) ? "Full price" : "Half price"
         let boundaryDay = Day.from(date: boundary, offsetHours: 8)
@@ -111,17 +96,16 @@ enum Format {
 
 // MARK: - StatusModel
 
-/// The scheduler of §5.  Holds no cached state that can go stale: every wake
+/// The scheduler.  Holds no cached state that can go stale: every wake
 /// recomputes from the injected clock, which is why a wake after three days of
 /// sleep costs one `resolve` plus one `nextChange` and needs no catch-up.
 ///
 /// Not `ObservableObject`: the UI is a plain `NSMenu` rebuilt on each open, so
-/// there is nothing to observe and no reason to link Combine.
+/// there is nothing to observe.
 final class StatusModel {
 
     /// A flip older than this is not announced: the Mac was asleep across the
-    /// boundary and the menu bar already shows the current state (§4.6, §6
-    /// case 18).
+    /// boundary and the menu bar already shows the current state.
     static let suppressionWindow: TimeInterval = 5 * 60
 
     private(set) var statusText: String
@@ -195,7 +179,7 @@ final class StatusModel {
         refresh()
     }
 
-    /// The launch / day-change holiday fetch (§5.1).  Runs off the main queue
+    /// The launch / day-change holiday fetch.  Runs off the main queue
     /// in the app; inline in the harness.
     func refreshHolidaysIfDue(isLaunch: Bool) {
         // Nothing to do (and no reason to initialise a network session)
@@ -220,7 +204,7 @@ final class StatusModel {
             refresh()
         case .dayChanged:
             // The fetch rides the existing day-change event; no timer is
-            // added (§5, §6 case 28).
+            // added.
             refreshHolidaysIfDue(isLaunch: false)
             refresh()
         }
@@ -231,7 +215,7 @@ final class StatusModel {
     }
 
     /// The single recompute path: timer fire, wake, clock change, timezone
-    /// change and day change all land here (§5, §10).
+    /// change and day change all land here.
     func onTick() { refresh() }
 
     func refresh() {
@@ -262,7 +246,7 @@ final class StatusModel {
         }
 
         // Wake at the earlier of the next minute (the countdown text changes)
-        // and the exact next phase boundary (§5).
+        // and the exact next phase boundary.
         let wake = min(StatusModel.nextMinuteBoundary(now), boundary)
         ticker.schedule(at: wake) { [weak self] in self?.onTick() }
 
@@ -318,9 +302,8 @@ enum LaunchAtLogin {
 
 /// Owns the menu bar item and the menu.
 ///
-/// The menu is an `NSMenu` rather than a SwiftUI popover: it is the lightest
-/// thing that can present this information, it needs no view hosting, and it
-/// removes SwiftUI and Combine from the binary entirely.
+/// An `NSMenu` is the lightest thing that can present this information: it
+/// needs no view hosting and no drawing of its own.
 final class StatusItemController: NSObject, NSMenuDelegate {
 
     private let statusItem: NSStatusItem
@@ -531,7 +514,7 @@ enum PeakbarMain {
         var problems = required.filter { !titles.contains($0) }
 
         // The colour rule: red in peak, green in off-peak.  Asserted here
-        // because the menu bar cannot be screenshotted (§7.4).
+        // because the menu bar cannot be screenshotted.
         let appearance = controller.selfTestTitleAppearance()
         let expectedColour: NSColor = (appearance.phase == .peak) ? .systemRed : .systemGreen
         let colourOK = appearance.color == expectedColour

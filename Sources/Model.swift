@@ -2,12 +2,12 @@
 //  Model.swift
 //  Peakbar
 //
-//  Value types for the billing schedule and the holiday table, plus the
-//  loaders for the bundled data files.  See ARCHITECTURE.md §3 and §4.1.
+//  Value types for the billing schedule and the holiday table, plus the loaders
+//  for the bundled data files.
 //
-//  Nothing in this file performs I/O beyond reading a bundled JSON file that
-//  the caller names explicitly.  `Schedule` and `HolidayTable` are plain
-//  values: `Resolver` consumes them, `HolidaySource` produces them.
+//  Nothing in this file performs I/O beyond reading a bundled JSON file that the
+//  caller names explicitly.  `Schedule` and `HolidayTable` are plain values:
+//  `Resolver` consumes them, `HolidaySource` produces them.
 //
 
 import Foundation
@@ -39,7 +39,7 @@ enum Phase: String, Equatable, Hashable {
     case peak
     case offpeak
 
-    /// Upper-case label used in the menu bar title and the popover.
+    /// Upper-case label used in the menu bar title and the menu.
     var display: String {
         switch self {
         case .peak: return "PEAK"
@@ -103,7 +103,7 @@ struct Window: Equatable, Hashable {
 
 /// A civil calendar date with no time zone and no time of day.
 ///
-/// Deliberately not a `Date`: the whole point of §4.2 is that the weekday is
+/// Deliberately not a `Date`: the whole point is that the weekday is
 /// read off the *Beijing* civil date, never off a UTC instant.
 struct Day: Hashable, Comparable, CustomStringConvertible {
     let y: Int
@@ -212,7 +212,7 @@ struct Day: Hashable, Comparable, CustomStringConvertible {
 // MARK: - Schedule
 
 /// The billing schedule.  Field names mirror the CC0 suite so the port stays
-/// mechanical (ARCHITECTURE.md §3.1).
+/// mechanical.
 struct Schedule: Equatable {
     let calendarTimezone: String
     let calendarUTCOffsetHours: Int
@@ -287,15 +287,14 @@ struct Schedule: Equatable {
 // MARK: - HolidayTable
 
 /// A holiday table: the union of what every available source vouches for.
-/// See ARCHITECTURE.md §3.2 and §3.3.
 ///
-/// `sourceWarning` is a deviation from the class diagram in §4.1: the diagram
+/// `sourceWarning` is a deviation from the class diagram: the diagram
 /// lists only `daysOff`, `makeupWorkdays`, `coveredYears` and `source`, but
-/// `Resolution.sourceWarning` (§4.1, §4.5, §6 case 21) has to reach the
+/// `Resolution.sourceWarning` has to reach the
 /// resolver, and the only value the resolver ever sees is this table.  Riding
 /// the flag on the table keeps `Resolver` a pure function of
-/// `(instant, schedule, table)`, which is what §4.2 requires, instead of
-/// widening `Resolver`'s interface.  See NOTES in the final report.
+/// `(instant, schedule, table)`, which is what is required, instead of
+/// widening `Resolver`'s interface.
 struct HolidayTable: Equatable {
     let daysOff: Set<Day>
     let makeupWorkdays: Set<Day>
@@ -325,7 +324,7 @@ struct HolidayTable: Equatable {
     }
 
     /// Union-on-days, top-down: `self` is the higher-precedence source and
-    /// wins on `source` (§3.3).
+    /// wins on `source`.
     func merge(lower: HolidayTable) -> HolidayTable {
         HolidayTable(
             daysOff: daysOff.union(lower.daysOff),
@@ -340,7 +339,7 @@ struct HolidayTable: Equatable {
     ///
     /// If the resource cannot be read the result has no `coveredYears`, which
     /// drives `stale` on every instant and therefore "assume peak"; the
-    /// conservative direction (§4.2, A6).  That is the safe failure mode.
+    /// conservative direction.  That is the safe failure mode.
     static func loadBundled() -> HolidayTable {
         guard let url = Bundle.main.url(forResource: "holidays-2026", withExtension: "json") else {
             FileHandle.standardError.write(Data("Peakbar: holidays-2026.json missing from bundle; assuming no coverage\n".utf8))
@@ -377,7 +376,7 @@ struct HolidayTable: Equatable {
 // MARK: - Resolution
 
 /// The full answer for one instant: the phase, why, and the two independent
-/// warning flags (§4.1).
+/// warning flags.
 struct Resolution: Equatable {
     let phase: Phase
     let basis: Basis
@@ -387,6 +386,6 @@ struct Resolution: Equatable {
     let sourceWarning: Bool
 
     /// True when either flag is set: the menu bar shows one `⚠` glyph for
-    /// both causes (§4.5).
+    /// both causes.
     var hasWarning: Bool { stale || sourceWarning }
 }

@@ -4,7 +4,7 @@
 //
 //  Harness entry point.  A plain executable, not XCTest and not swift-testing:
 //  `swift test` is unusable on this machine because the swift-testing macro
-//  plugin fails to load without Xcode (ARCHITECTURE.md §7, §8).
+//  plugin fails to load without Xcode.
 //
 //  Runs every suite, prints pass/fail, and exits non-zero on any failure.
 //

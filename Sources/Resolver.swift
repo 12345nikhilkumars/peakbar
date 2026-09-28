@@ -2,13 +2,12 @@
 //  Resolver.swift
 //  Peakbar
 //
-//  The pure phase predicate and the next-change walk.  See ARCHITECTURE.md
-//  §4.2 and §4.3.
+//  The pure phase predicate and the next-change walk.
 //
-//  `Resolver` is pure over an instant: no clock, no I/O, no network, no
-//  mutable state.  It consumes a `HolidayTable` value; `HolidaySource` is the
-//  thing that produces one.  This is what makes the phase path impossible to
-//  block and the tests deterministic (§4.2, §6 case 27).
+//  `Resolver` is pure over an instant: no clock, no I/O, no network, no mutable
+//  state.  It consumes a `HolidayTable` value; `HolidaySource` is the thing that
+//  produces one.  This is what makes the phase path impossible to block and the
+//  tests deterministic.
 //
 
 import Foundation
@@ -16,7 +15,7 @@ import Foundation
 struct Resolver {
 
     /// Search ceiling for the next-change walk.  A *bound*, not a distance
-    /// travelled and not a fetch cadence (§4.3, §5.1).  The longest reachable
+    /// travelled and not a fetch cadence.  The longest reachable
     /// off-peak stretch is a holiday block ending on a Monday: last peak
     /// Friday 18:00 → next peak Tuesday 09:00 = 10.63 days, so the reference's
     /// 10 is not enough and 40 is.
@@ -34,7 +33,7 @@ struct Resolver {
 
     /// The civil date in the schedule's calendar (UTC+8 for Asia/Shanghai).
     ///
-    /// This is the load-bearing shift of §6 case 1: the weekday must be read
+    /// This is the load-bearing shift: the weekday must be read
     /// off this date, never off the UTC instant.
     func beijingDay(at date: Date) -> Day {
         Day.from(date: date, offsetHours: schedule.calendarUTCOffsetHours)
@@ -52,7 +51,7 @@ struct Resolver {
     }
 
     /// True when the UTC minute-of-day falls in any peak window, half-open
-    /// `start <= m < end` (§4.2, §6 case 4).
+    /// `start <= m < end`.
     func inPeakWindow(_ date: Date) -> Bool {
         let m = utcMinuteOfDay(date)
         for w in schedule.peakWindowsUTC where w.contains(minuteOfDay: m) {
@@ -73,7 +72,7 @@ struct Resolver {
     ///   candidate instant, and this flag does not touch it.
     /// * `Resolution.stale`, this function, answers a different question:
     ///   "may any number on screen be wrong?"  So it covers the **countdown
-    ///   target** as well as "now" (§4.1).
+    ///   target** as well as "now".
     ///
     /// Why the target matters.  At 2026-12-31 18:00 Beijing the current year is
     /// covered, so a now-only flag stays silent, but the countdown is computed
@@ -94,10 +93,10 @@ struct Resolver {
 
     // MARK: - Phase predicate
 
-    /// The predicate of §4.2, returning the phase together with the reason.
+    /// The predicate, returning the phase together with the reason.
     ///
     /// The effective-date gate is evaluated on `at`, the candidate, never
-    /// once on "now" (§6 case 3, A9).
+    /// once on "now".
     func classify(at date: Date) -> (phase: Phase, basis: Basis) {
         let day = beijingDay(at: date)
         let weekday = day.isoWeekday
@@ -106,7 +105,7 @@ struct Resolver {
         let inWindow = inPeakWindow(date)
 
         if effective {
-            // Weekend rule first: it supersedes make-up workdays (§6 case 6).
+            // Weekend rule first: it supersedes make-up workdays.
             if !schedule.peakWeekdays.contains(weekday) {
                 return (.offpeak, .weekend)
             }
@@ -116,7 +115,7 @@ struct Resolver {
             }
             if inWindow {
                 // On a stale year the holiday table is skipped, so a peak
-                // answer here is an assumption, not a fact (§4.2, A6).
+                // answer here is an assumption, not a fact.
                 return (.peak, stale ? .assumedPeak : .window)
             }
             return (.offpeak, .window)
@@ -171,8 +170,7 @@ struct Resolver {
     ///
     /// Walks the candidate edges forward and compares the phase on either
     /// side.  Weekend- and holiday-resident edges produce no change and are
-    /// skipped *without being special-cased*: that is the whole trick of §4.3
-    /// and §6 case 2.
+    /// skipped *without being special-cased*: that is the whole trick.
     func nextChange(at date: Date) -> (date: Date, phase: Phase) {
         let now = phase(at: date)
         let offsets = candidateMinuteOffsets()
@@ -188,21 +186,18 @@ struct Resolver {
             }
         }
         // Unreachable for any non-wrapping schedule: the bound exceeds the
-        // longest possible off-peak stretch (§4.3).
+        // longest possible off-peak stretch.
         return (date, now)
     }
 
-    // NOTE on `stale`.  §4.1's flag table defines it as "a year required now,
-    // *or by the next-boundary lookahead*, is not in `coveredYears`", while
-    // §4.2's predicate and §3.4's factual claim key on the current Beijing year
-    // alone.  §4.1 is the definition of the flag, and the wider reading is the
-    // correct one: the countdown is a number on screen and it can be wrong for
-    // days before the current year rolls over, so `Resolution.stale`
-    // implements the union (§4.1).
+    // NOTE on `stale`.  The display flag is the union of two questions: is the
+    // current Beijing year uncovered, and is the year the countdown lands in
+    // uncovered?  The countdown is a number on screen and it can be wrong for
+    // days before the current year rolls over, so the wider reading is the
+    // correct one.
     //
-    // §4.2 stays authoritative for the *predicate*: `classify(at:)` keeps
-    // per-candidate staleness, so a candidate in an uncovered year still skips
-    // holiday subtraction and degrades to assume-peak.  Widening the display
-    // flag must never widen the fail-safe.  The two are independent, and only
-    // the flag changed here.
+    // The *predicate* keeps per-candidate staleness only: `classify(at:)` still
+    // degrades an uncovered candidate to assume-peak, and that fail-safe is
+    // unchanged.  Widening the display flag must never widen the fail-safe.
+    // The two are independent.
 }
