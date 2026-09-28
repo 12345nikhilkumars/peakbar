@@ -3,13 +3,17 @@
 A macOS menu bar indicator showing whether the DeepSeek API is currently on peak or off-peak
 pricing, with a countdown to the next change.
 
-Red means peak. Green means off-peak.
+**Red means peak. Green means off-peak.**
 
-##Images
+## Screenshots
 
+Off-peak, shown in green in the menu bar:
 
-<img width="302" height="36" alt="image" src="https://github.com/user-attachments/assets/f614422a-6c29-4dd3-a7f0-00283f03461d" />
-<img width="329" height="231" alt="image" src="https://github.com/user-attachments/assets/6d437df1-6754-46db-be2f-f3e0af6ebfc5" />
+<img src="docs/menu-bar.png" width="302" alt="The macOS menu bar with Peakbar showing OFF-PEAK 14h35m in green">
+
+The menu, open. The next change is given in both Beijing and local time:
+
+<img src="docs/menu.png" width="329" alt="The Peakbar menu open, showing OFF-PEAK 14h35m, the next change in Beijing and in local time, tick boxes for notify on rate change and launch at login, and Quit Peakbar">
 
 ## Features
 
@@ -23,10 +27,10 @@ Red means peak. Green means off-peak.
 - **Holiday aware**, including make-up workdays, from Apple's China holiday calendar.
 - **Needs-based fetching**: roughly 49 requests a year rather than 365, because it only fetches when
   a fetch can change an answer.
-- **Fails safe**. If the current year's holiday arrangement is not published yet, the app says so and
+- **Fails safe.** If the current year's holiday arrangement is not published yet, the app says so and
   assumes peak, so it never under-reports the price.
 - **No account, no API key, no telemetry**, and no network beyond the single calendar fetch.
-- **No Dock icon**. It lives in the menu bar.
+- **No Dock icon.** It lives in the menu bar.
 
 ## Resource usage
 
@@ -53,10 +57,12 @@ For scale: an empty AppKit menu bar app with one status item and no logic of its
 
 Requires macOS 14 or later and the Xcode Command Line Tools. Xcode itself is not needed.
 
-    git clone https://github.com/12345nikhilkumars/peakbar
-    cd peakbar
-    make test        # optional, runs the suite
-    make install
+```sh
+git clone https://github.com/12345nikhilkumars/peakbar
+cd peakbar
+make test        # optional, runs the suite
+make install
+```
 
 `make install` compiles, assembles the bundle, ad-hoc signs it and copies `Peakbar.app` to
 `/Applications`.
@@ -75,20 +81,15 @@ The app is ad-hoc signed but **not notarized by Apple**, so macOS will refuse to
 time. Two ways past that:
 
 1. Open System Settings, go to Privacy and Security, and approve the app after attempting to launch
-   it once. See
-   [Apple's instructions](https://support.apple.com/en-us/102445).
+   it once. See [Apple's instructions](https://support.apple.com/en-us/102445).
 2. Or clear the quarantine flag from the terminal:
 
-       xattr -d com.apple.quarantine /Applications/Peakbar.app
+   ```sh
+   xattr -d com.apple.quarantine /Applications/Peakbar.app
+   ```
 
 The second is quicker but means trusting a binary you have not built. If that matters to you, build
 from source instead.
-
-## What it shows
-
-The menu bar title reads `PEAK 2h45m` or `OFF-PEAK 1h05m`, coloured red or green. Clicking it shows
-the current phase, the time remaining, the exact instant of the next change in both Beijing and local
-time, and two toggles: notify on rate change, and launch at login.
 
 ## Accuracy
 
@@ -123,21 +124,23 @@ never under-reports the price.
 Requires the Xcode Command Line Tools. There is no Xcode project, no SwiftPM manifest and no
 third-party dependency.
 
-    make build     # compile
-    make test      # run the test harness
-    make bundle    # assemble Peakbar.app
-    make sign      # ad-hoc sign it
-    make install   # copy to /Applications
-    make clean
+```sh
+make build     # compile
+make test      # run the test harness
+make bundle    # assemble Peakbar.app
+make sign      # ad-hoc sign it
+make install   # copy to /Applications
+make clean
+```
 
 `make test` is a plain executable harness rather than XCTest, because `swift test` does not work
 without a full Xcode install.
 
 ## Licence
 
-GNU Affero General Public License, version 3 or later. See `LICENSE`.
+GNU Affero General Public License, version 3 or later. See [`LICENSE`](LICENSE).
 
-Third-party notices are in `NOTICE`.
+Third-party notices are in [`NOTICE`](NOTICE).
 
 ## Disclaimer
 
