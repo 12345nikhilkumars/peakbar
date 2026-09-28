@@ -5,6 +5,10 @@ pricing, with a countdown to the next change.
 
 Red means peak. Green means off-peak.
 
+##Images
+<img width="302" height="36" alt="image" src="https://github.com/user-attachments/assets/f614422a-6c29-4dd3-a7f0-00283f03461d" />
+<img width="329" height="231" alt="image" src="https://github.com/user-attachments/assets/6d437df1-6754-46db-be2f-f3e0af6ebfc5" />
+
 ## Features
 
 - **Menu bar title** reading `PEAK 2h45m` or `OFF-PEAK 1h05m`, coloured red for peak and green for
