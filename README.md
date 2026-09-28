@@ -58,13 +58,14 @@ Requires macOS 14 or later and the Xcode Command Line Tools. Xcode itself is not
 **This is the better option.** You can read every line that goes into the binary first, you can run
 the tests yourself, and you skip the quarantine step described below entirely.
 
-### From a release binary
+### From the disk image
 
-Download `Peakbar-1.0.0.zip` from the
-[releases page](https://github.com/12345nikhilkumars/peakbar/releases/latest) and move `Peakbar.app`
-into `/Applications`.
+Download `Peakbar-1.0.0.dmg` from the
+[releases page](https://github.com/12345nikhilkumars/peakbar/releases/latest), open it, and drag
+**Peakbar** onto the **Applications** folder shown beside it. Then eject the image and launch Peakbar
+from Applications. There is no installer.
 
-The binary is ad-hoc signed but **not notarized by Apple**, so macOS will refuse to open it the first
+The app is ad-hoc signed but **not notarized by Apple**, so macOS will refuse to open it the first
 time. Two ways past that:
 
 1. Open System Settings, go to Privacy and Security, and approve the app after attempting to launch
